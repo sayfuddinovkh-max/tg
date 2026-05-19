@@ -2,24 +2,33 @@ from telethon import TelegramClient, events
 from groq import Groq
 import os
 
+# API
 api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
-bot_token = os.getenv("BOT_TOKEN")
 groq_key = os.getenv("GROQ_API_KEY")
 
-client = TelegramClient('bot', api_id, api_hash)
+# TELEGRAM CLIENT
+client = TelegramClient("session", api_id, api_hash)
+
+# GROQ AI
 ai = Groq(api_key=groq_key)
 
-@client.on(events.NewMessage)
+# SOURCE CHANNEL
+SOURCE_CHANNEL = "xebpi"
+
+# TARGET CHANNEL
+TARGET_CHANNEL = "tezkoryangiliklar6"
+
+print("AUTO TRANSLATOR STARTED")
+
+@client.on(events.NewMessage(chats=SOURCE_CHANNEL))
 async def handler(event):
-    text = event.raw_text
-
-    # /start komandasi
-    if text == "/start":
-        await event.reply("Inglizcha matn yuboring.")
-        return
-
     try:
+        text = event.raw_text
+
+        if not text:
+            return
+
         response = ai.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
@@ -29,17 +38,13 @@ async def handler(event):
 You are an elite English-to-Uzbek translator.
 
 Rules:
-- Translate naturally like a real Uzbek human.
-- Make the text easy and pleasant to read.
+- Translate naturally like real Uzbek news channels.
 - Do NOT translate word-by-word.
-- Preserve the exact meaning.
-- News must sound professional and natural.
-- Social texts must sound casual and fluent.
+- Make it fluent and easy to read.
 - Keep emojis and formatting.
-- ONLY return Uzbek translation.
-- Do NOT explain anything.
-- Do NOT repeat original English text.
-- Use modern natural Uzbek.
+- ONLY output Uzbek translation.
+- No explanations.
+- No original English text.
 """
                 },
                 {
@@ -49,14 +54,17 @@ Rules:
             ]
         )
 
-        answer = response.choices[0].message.content.strip()
+        translated = response.choices[0].message.content.strip()
 
-        await event.reply(answer)
+        # SEND TO YOUR CHANNEL
+        await client.send_message(TARGET_CHANNEL, translated)
+
+        print("POST SENT")
 
     except Exception as e:
-        await event.reply(f"XATO: {e}")
+        print("ERROR:", e)
 
-print("BOT STARTED")
+print("BOT RUNNING...")
 
-client.start(bot_token=bot_token)
+client.start()
 client.run_until_disconnected()
