@@ -2,10 +2,10 @@ from telethon import TelegramClient, events
 from openai import OpenAI
 import os
 
-api_id = 12345678
-api_hash = "API_HASHING"
-bot_token = "BOT_TOKENING"
-openai_key = "OPENAI_API_KEYING"
+api_id = int(os.getenv("API_ID"))
+api_hash = os.getenv("API_HASH")
+bot_token = os.getenv("BOT_TOKEN")
+openai_key = os.getenv("OPENAI_API_KEY")
 
 client = TelegramClient('bot', api_id, api_hash)
 ai = OpenAI(api_key=openai_key)
@@ -15,7 +15,7 @@ async def handler(event):
     text = event.raw_text
 
     response = ai.chat.completions.create(
-        model="gpt-5.5-mini",
+        model="gpt-4o-mini",
         messages=[
             {
                 "role": "user",
