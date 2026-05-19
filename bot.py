@@ -3,31 +3,43 @@ from openai import OpenAI
 import os
 
 # ENV
-api_id = int(os.environ["API_ID"])
-api_hash = os.environ["API_HASH"]
-bot_token = os.environ["BOT_TOKEN"]
-openai_key = os.environ["OPENAI_API_KEY"]
+api_id = int(os.getenv("API_ID"))
+api_hash = os.getenv("API_HASH")
+bot_token = os.getenv("BOT_TOKEN")
+groq_key = os.getenv("GROQ_API_KEY")
 
-# CLIENTS
+# TELEGRAM
 client = TelegramClient("bot", api_id, api_hash)
-ai = OpenAI(api_key=openai_key)
 
-# MESSAGE HANDLER
+# GROQ
+ai = OpenAI(
+    api_key=groq_key,
+    base_url="https://api.groq.com/openai/v1"
+)
+
+print("GROQ TRANSLATOR STARTED")
+
 @client.on(events.NewMessage)
 async def handler(event):
     try:
         text = event.raw_text
 
+        if event.out:
+            return
+
         response = ai.chat.completions.create(
-            model="gpt-4o-mini",
+            model="llama3-70b-8192",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful translator."
+                    "content": (
+                        "You are a professional English to Uzbek translator. "
+                        "Translate naturally into Uzbek."
+                    )
                 },
                 {
                     "role": "user",
-                    "content": f"Translate this text to English:\n\n{text}"
+                    "content": text
                 }
             ]
         )
@@ -37,9 +49,7 @@ async def handler(event):
         await event.reply(answer)
 
     except Exception as e:
-        await event.reply(f"Error: {e}")
-
-print("BOT STARTED")
+        await event.reply(f"ERROR: {e}")
 
 client.start(bot_token=bot_token)
 client.run_until_disconnected()
