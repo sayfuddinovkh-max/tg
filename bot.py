@@ -14,22 +14,44 @@ ai = Groq(api_key=groq_key)
 async def handler(event):
     text = event.raw_text
 
+    # /start komandasi
+    if text == "/start":
+        await event.reply("Inglizcha matn yuboring.")
+        return
+
     try:
         response = ai.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {
+                    "role": "system",
+                    "content": """
+You are a professional English to Uzbek translator.
+
+Rules:
+- ONLY return translated Uzbek text.
+- Do NOT explain anything.
+- Do NOT repeat original text.
+- Keep punctuation perfect.
+- Keep emojis and stickers meaning naturally.
+- Translate naturally like native Uzbek.
+- Keep short texts short.
+- Do not add quotes.
+"""
+                },
+                {
                     "role": "user",
-                    "content": f"Translate this text to Uzbek: {text}"
+                    "content": text
                 }
             ]
         )
 
-        answer = response.choices[0].message.content
+        answer = response.choices[0].message.content.strip()
+
         await event.reply(answer)
 
     except Exception as e:
-        await event.reply(f"ERROR: {e}")
+        await event.reply(f"XATO: {e}")
 
 print("BOT STARTED")
 
