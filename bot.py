@@ -14,7 +14,7 @@ client = TelegramClient("session", api_id, api_hash)
 ai = Groq(api_key=groq_key)
 
 # SOURCE CHANNEL
-SOURCE_CHANNEL = "xebpi"
+SOURCE_CHANNEL = "num1_ch"
 
 # TARGET CHANNEL
 TARGET_CHANNEL = "tezkoryangiliklar6"
